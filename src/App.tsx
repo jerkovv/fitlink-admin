@@ -4,6 +4,7 @@ import { AdminLayout } from '@/components/layout/AdminLayout'
 import Login from '@/pages/Login'
 import Pregled from '@/pages/Pregled'
 import Treneri from '@/pages/Treneri'
+import TrenerDetalji from '@/pages/TrenerDetalji'
 import Vezbaci from '@/pages/Vezbaci'
 import Pretplate from '@/pages/Pretplate'
 import Vezbe from '@/pages/Vezbe'
@@ -20,6 +21,7 @@ export default function App() {
         <Route element={<AdminLayout />}>
           <Route path="/" element={<Pregled />} />
           <Route path="/treneri" element={<Treneri />} />
+          <Route path="/treneri/:id" element={<TrenerDetalji />} />
           <Route path="/vezbaci" element={<Vezbaci />} />
           <Route path="/pretplate" element={<Pretplate />} />
           <Route path="/vezbe" element={<Vezbe />} />
