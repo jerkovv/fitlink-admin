@@ -6,6 +6,7 @@ import Pregled from '@/pages/Pregled'
 import Treneri from '@/pages/Treneri'
 import TrenerDetalji from '@/pages/TrenerDetalji'
 import Vezbaci from '@/pages/Vezbaci'
+import VezbacDetalji from '@/pages/VezbacDetalji'
 import Pretplate from '@/pages/Pretplate'
 import Vezbe from '@/pages/Vezbe'
 import Namirnice from '@/pages/Namirnice'
@@ -23,6 +24,7 @@ export default function App() {
           <Route path="/treneri" element={<Treneri />} />
           <Route path="/treneri/:id" element={<TrenerDetalji />} />
           <Route path="/vezbaci" element={<Vezbaci />} />
+          <Route path="/vezbaci/:id" element={<VezbacDetalji />} />
           <Route path="/pretplate" element={<Pretplate />} />
           <Route path="/vezbe" element={<Vezbe />} />
           <Route path="/namirnice" element={<Namirnice />} />

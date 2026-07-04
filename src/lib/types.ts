@@ -40,3 +40,25 @@ export type ListSubscription = {
   created_at: string | null
   updated_at: string | null
 }
+
+// Jedan vezbac iz admin_list_athletes() RPC-a (profil + trener + agregati aktivnosti).
+export type ListAthlete = {
+  id: string
+  full_name: string | null
+  email: string | null
+  phone: string | null
+  avatar_url: string | null
+  trainer_id: string | null
+  trainer_name: string | null
+  goal: string | null
+  height_cm: number | null
+  weight_kg: number | null
+  notes: string | null
+  birth_year: number | null
+  gender: string | null
+  signup_source: string | null
+  joined_at: string
+  workouts_done: number | null
+  last_workout: string | null
+  programs_count: number | null
+}
