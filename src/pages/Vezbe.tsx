@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import {
   Search,
   RefreshCw,
@@ -133,7 +134,12 @@ function SortableRow({ ex }: { ex: Exercise }) {
 }
 
 export default function Vezbe() {
-  const [group, setGroup] = useState(DEFAULT_GROUP)
+  // Deep-link iz Prijave modula: { group, openId } -> izaberi grupu + otvori edit te vezbe.
+  const location = useLocation()
+  const initial = (location.state as { group?: string; openId?: string } | null) ?? null
+  const openIdRef = useRef(initial?.openId ?? null)
+
+  const [group, setGroup] = useState(initial?.group ?? DEFAULT_GROUP)
   const [q, setQ] = useState('')
   const [debouncedQ, setDebouncedQ] = useState('')
   const [rows, setRows] = useState<Exercise[]>([])
@@ -181,6 +187,26 @@ export default function Vezbe() {
   useEffect(() => {
     reload()
   }, [reload])
+
+  // Deep-link (iz Prijave): otvori edit sheet bas te vezbe (radi i ako je van prve strane).
+  useEffect(() => {
+    const openId = openIdRef.current
+    if (!openId) return
+    let alive = true
+    supabase
+      .from('exercises')
+      .select('*')
+      .eq('id', openId)
+      .single()
+      .then(({ data }) => {
+        if (!alive || !data) return
+        setSelected(data as Exercise)
+        setSheetOpen(true)
+      })
+    return () => {
+      alive = false
+    }
+  }, [])
 
   const loadMore = async () => {
     const my = reqRef.current

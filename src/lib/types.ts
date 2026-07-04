@@ -83,3 +83,21 @@ export type Exercise = {
   created_at: string
   created_by: string | null
 }
+
+// Jedna prijava slomljenog medija iz admin_list_media_reports() RPC-a (prijava + vezba + prijavilac).
+export type ListMediaReport = {
+  id: string
+  exercise_id: string
+  status: string
+  reason: string | null
+  admin_note: string | null
+  created_at: string
+  resolved_at: string | null
+  exercise_name: string | null
+  exercise_name_en: string | null
+  primary_muscle: string | null
+  thumbnail_url: string | null
+  video_url: string | null
+  reported_by: string | null
+  reporter_name: string | null
+}
