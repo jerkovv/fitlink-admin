@@ -13,6 +13,7 @@ import {
   CircleX,
   UserPlus,
   Activity,
+  Apple,
   Flag,
   TriangleAlert,
   RefreshCw,
@@ -36,6 +37,7 @@ type Stats = {
   new_trainers_7d: number
   new_athletes_7d: number
   open_media_reports: number
+  food_items_total: number
 }
 
 // Broj sa separatorom hiljada tackom (4.699). "-" ako podatak fali.
@@ -198,6 +200,7 @@ function Dashboard({ stats }: { stats: Stats }) {
           <MiniStat label="Novi treneri (7 dana)" value={fmtInt(stats.new_trainers_7d)} icon={UserPlus} />
           <MiniStat label="Novi vežbači (7 dana)" value={fmtInt(stats.new_athletes_7d)} icon={Activity} />
           <MiniStat label="Vežbi u bazi" value={fmtInt(stats.exercises_total)} icon={Dumbbell} />
+          <MiniStat label="Namirnica u bazi" value={fmtInt(stats.food_items_total)} icon={Apple} />
           <MiniStat
             label="Otvorene prijave"
             value={fmtInt(stats.open_media_reports)}
