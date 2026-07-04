@@ -93,3 +93,43 @@
     letter-spacing: -0.022em;
   }
 }
+
+/* Ulazne animacije za slide-over (Sheet) i confirm (AlertDialog). Zatvaranje je trenutno
+   (radix odmontira sadrzaj) - dovoljno za interni panel. */
+@keyframes fl-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes fl-slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes fl-zoom-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+[data-slot='sheet-overlay'][data-state='open'],
+[data-slot='ad-overlay'][data-state='open'] {
+  animation: fl-fade-in 0.18s ease-out;
+}
+[data-slot='sheet-content'][data-state='open'] {
+  animation: fl-slide-in-right 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+}
+[data-slot='ad-content'][data-state='open'] {
+  animation: fl-zoom-in 0.16s ease-out;
+}
