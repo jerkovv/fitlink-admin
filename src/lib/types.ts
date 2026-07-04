@@ -62,3 +62,24 @@ export type ListAthlete = {
   last_workout: string | null
   programs_count: number | null
 }
+
+// Jedna vezba iz exercises tabele (select *). Admin cita/menja direktno (admin RLS).
+export type Exercise = {
+  id: string
+  name: string
+  name_en: string | null
+  description: string | null
+  instructions: string | null
+  primary_muscle: string
+  secondary_muscles: string[] | null
+  equipment: string
+  category: string | null
+  is_global: boolean
+  is_duration_based: boolean
+  thumbnail_url: string | null
+  video_url: string | null
+  popularity: number
+  popularity_locked: boolean
+  created_at: string
+  created_by: string | null
+}
