@@ -101,3 +101,24 @@ export type ListMediaReport = {
   reported_by: string | null
   reporter_name: string | null
 }
+
+// Jedna namirnica iz food_items (select *). Admin CRUD direktno (admin RLS).
+export type FoodItem = {
+  id: string
+  name: string
+  category: string
+  kcal_per_100g: number
+  protein_per_100g: number
+  carbs_per_100g: number
+  fat_per_100g: number
+  serving_size_g: number
+  unit: string
+  grams_per_unit: number
+  is_vegan: boolean
+  is_gluten_free: boolean
+  is_posno: boolean
+  za_trenera: boolean
+  is_global: boolean
+  created_by: string | null
+  created_at: string
+}
