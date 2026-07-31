@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Search, RefreshCw, Plus, TriangleAlert, Loader2 } from 'lucide-react'
+import { Search, RefreshCw, Plus, TriangleAlert, Loader2, Check } from 'lucide-react'
+import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import type { FoodItem } from '@/lib/types'
 import { fmtG } from '@/lib/food'
@@ -32,7 +33,10 @@ async function queryFoods(category: string, status: Status, q: string, pageIdx: 
   else if (status === 'approved') qb = qb.eq('is_global', true)
   const safe = q.trim()
   if (safe) qb = qb.ilike('name', `%${safe}%`)
-  return qb.order('name').range(from, from + PAGE - 1)
+  // Predlozene (na cekanju): najnovije prvo, da admin prvo vidi sta je stiglo skoro.
+  // Ostali filteri zadrzavaju postojece abecedno sortiranje.
+  const ordered = status === 'pending' ? qb.order('created_at', { ascending: false }) : qb.order('name')
+  return ordered.range(from, from + PAGE - 1)
 }
 
 function MacroChip({ label, value }: { label: string; value: number }) {
@@ -75,7 +79,26 @@ export default function Namirnice() {
   const [editItem, setEditItem] = useState<FoodItem | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
 
+  // Ime trenera koji je predlozio namirnicu (created_by -> profiles.full_name).
+  // created_by nema FK na profiles u bazi, pa PostgREST embed nije moguc - poseban upit.
+  const [proposerNames, setProposerNames] = useState<Record<string, string>>({})
+  const [approvingId, setApprovingId] = useState<string | null>(null)
+
   const reqRef = useRef(0)
+
+  const loadProposerNames = useCallback(async (items: FoodItem[]) => {
+    const ids = [...new Set(items.map((it) => it.created_by).filter((id): id is string => !!id))]
+    if (ids.length === 0) return
+    const { data } = await supabase.from('profiles').select('id, full_name').in('id', ids)
+    if (!data) return
+    setProposerNames((prev) => {
+      const next = { ...prev }
+      for (const p of data as { id: string; full_name: string | null }[]) {
+        next[p.id] = p.full_name || 'Nepoznat trener'
+      }
+      return next
+    })
+  }, [])
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQ(q), 300)
@@ -129,7 +152,8 @@ export default function Namirnice() {
     setPage(0)
     setHasMore((data as FoodItem[]).length === PAGE)
     setLoading(false)
-  }, [category, status, debouncedQ])
+    void loadProposerNames(data as FoodItem[])
+  }, [category, status, debouncedQ, loadProposerNames])
 
   useEffect(() => {
     reload()
@@ -148,6 +172,7 @@ export default function Namirnice() {
     setRows((prev) => [...prev, ...(data as FoodItem[])])
     setPage((p) => p + 1)
     setHasMore((data as FoodItem[]).length === PAGE)
+    void loadProposerNames(data as FoodItem[])
   }
 
   const matches = (it: FoodItem) =>
@@ -168,6 +193,21 @@ export default function Namirnice() {
     })
     if (matches(saved)) setEditItem(saved)
     else setSheetOpen(false)
+  }
+
+  // Odobri predlozenu namirnicu (is_global: false -> true). admin_update_food RLS
+  // vec dozvoljava direktan update za admina, nije potrebna nova RPC.
+  const approveFood = async (it: FoodItem, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setApprovingId(it.id)
+    const { error: err } = await supabase.from('food_items').update({ is_global: true }).eq('id', it.id)
+    setApprovingId(null)
+    if (err) {
+      toast.error('Greška pri odobravanju namirnice.')
+      return
+    }
+    toast.success(`"${it.name}" je sada globalna namirnica.`)
+    handleSaved({ ...it, is_global: true }, false)
   }
 
   const handleDeleted = (id: string) => {
@@ -277,6 +317,7 @@ export default function Namirnice() {
                   <TableHead className="hidden md:table-cell">Kategorija</TableHead>
                   <TableHead>Makroi / 100 g</TableHead>
                   <TableHead className="hidden lg:table-cell">Oznake</TableHead>
+                  {status === 'pending' && <TableHead className="hidden sm:table-cell">Trener</TableHead>}
                   <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
@@ -296,6 +337,11 @@ export default function Namirnice() {
                       <TableCell className="hidden lg:table-cell">
                         <div className="h-4 w-24 animate-pulse rounded bg-muted" />
                       </TableCell>
+                      {status === 'pending' && (
+                        <TableCell className="hidden sm:table-cell">
+                          <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+                        </TableCell>
+                      )}
                       <TableCell>
                         <div className="h-5 w-20 animate-pulse rounded-full bg-muted" />
                       </TableCell>
@@ -303,7 +349,7 @@ export default function Namirnice() {
                   ))
                 ) : rows.length === 0 ? (
                   <TableRow className="hover:bg-transparent">
-                    <TableCell colSpan={5} className="py-16 text-center text-sm text-muted-foreground">
+                    <TableCell colSpan={status === 'pending' ? 6 : 5} className="py-16 text-center text-sm text-muted-foreground">
                       {status === 'pending' ? 'Nema namirnica na čekanju.' : 'Nema namirnica za taj filter.'}
                     </TableCell>
                   </TableRow>
@@ -342,16 +388,39 @@ export default function Namirnice() {
                           {it.za_trenera && <Tag muted>Trener</Tag>}
                         </div>
                       </TableCell>
+                      {status === 'pending' && (
+                        <TableCell className="hidden sm:table-cell text-muted-foreground">
+                          {(it.created_by && proposerNames[it.created_by]) || '-'}
+                        </TableCell>
+                      )}
                       <TableCell>
-                        {it.is_global ? (
-                          <span className="inline-flex items-center whitespace-nowrap rounded-full bg-green-50 px-2 py-0.5 text-xs font-semibold text-green-700 ring-1 ring-inset ring-green-200">
-                            Odobrena
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center whitespace-nowrap rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700 ring-1 ring-inset ring-amber-200">
-                            Na čekanju
-                          </span>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {it.is_global ? (
+                            <span className="inline-flex items-center whitespace-nowrap rounded-full bg-green-50 px-2 py-0.5 text-xs font-semibold text-green-700 ring-1 ring-inset ring-green-200">
+                              Odobrena
+                            </span>
+                          ) : (
+                            <>
+                              <span className="inline-flex items-center whitespace-nowrap rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700 ring-1 ring-inset ring-amber-200">
+                                Na čekanju
+                              </span>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 px-2 text-xs"
+                                disabled={approvingId === it.id}
+                                onClick={(e) => approveFood(it, e)}
+                              >
+                                {approvingId === it.id ? (
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                ) : (
+                                  <Check className="h-3 w-3" />
+                                )}
+                                Postavi kao globalnu
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))

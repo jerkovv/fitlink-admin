@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { ArrowLeft, Save, Loader2, TriangleAlert } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import type { ListTrainer } from '@/lib/types'
-import { fmtDMY, fmtInt } from '@/lib/format'
+import { fmtDMY, fmtInt, initials } from '@/lib/format'
 import { SubBadge } from '@/components/SubBadge'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
+import { cn } from '@/lib/utils'
 
 type TrainerRow = {
   id: string
@@ -130,6 +131,69 @@ const parseSpecialties = (v: string): string[] =>
 const planLabel = (plan: string | null | undefined): string =>
   plan === 'monthly' ? 'Mesečna' : plan === 'yearly' ? 'Godišnja' : '-'
 
+// Jedan vezbac iz admin_trainer_athletes_detail() RPC-a.
+type AthleteMembership = {
+  plan_name: string | null
+  price: number | null
+  status: string | null
+  ends_on: string | null
+  days_left: number | null
+  sessions_total: number | null
+  sessions_used: number | null
+}
+type TrainerAthlete = {
+  athlete_id: string
+  full_name: string | null
+  avatar_url: string | null
+  joined_at: string | null
+  last_workout_at: string | null
+  workouts_30d: number | null
+  risk: string | null
+  membership: AthleteMembership | null
+  paid_count: number | null
+  paid_total_rsd: number | null
+}
+
+// Isti Avatar obrazac kao Treneri.tsx/Vezbaci.tsx (lokalna kopija - u ovom repo-u
+// nije izvucena u deljenu komponentu).
+function Avatar({ url, name }: { url: string | null; name: string | null }) {
+  if (url) {
+    return <img src={url} alt="" className="h-9 w-9 shrink-0 rounded-full object-cover" />
+  }
+  return (
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-semibold text-primary">
+      {initials(name, null)}
+    </div>
+  )
+}
+
+// Relativno ("pre X dana") za skorasnje datume, puni datum za starije ili "-" ako nema.
+function fmtRelativeDays(iso: string | null): string {
+  if (!iso) return '-'
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return '-'
+  const days = Math.floor((Date.now() - d.getTime()) / 86400000)
+  if (days <= 0) return 'danas'
+  if (days === 1) return 'juče'
+  if (days < 30) return `pre ${days} dana`
+  return fmtDMY(iso)
+}
+
+const RISK_DOT: Record<string, string> = {
+  high: 'bg-red-500',
+  medium: 'bg-amber-500',
+  low: 'bg-green-500',
+}
+function RiskDot({ risk }: { risk: string | null }) {
+  const cls = (risk && RISK_DOT[risk]) || 'bg-muted-foreground/30'
+  return <span className={cn('inline-block h-2.5 w-2.5 rounded-full shrink-0', cls)} title={risk ?? undefined} />
+}
+
+// Bez clanarine ILI istekla (days_left < 0) su najhitnije - prikazi ih prve.
+function isUrgentAthlete(a: TrainerAthlete): boolean {
+  return !a.membership || (a.membership.days_left != null && a.membership.days_left < 0)
+}
+
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <Card className="p-5 sm:p-6">
@@ -184,6 +248,43 @@ export default function TrenerDetalji() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [saving, setSaving] = useState(false)
+
+  const [athletes, setAthletes] = useState<TrainerAthlete[] | null>(null)
+  const [athletesLoading, setAthletesLoading] = useState(true)
+  const [athletesError, setAthletesError] = useState(false)
+
+  useEffect(() => {
+    if (!id) {
+      setAthletesError(true)
+      setAthletesLoading(false)
+      return
+    }
+    let cancelled = false
+    setAthletesLoading(true)
+    setAthletesError(false)
+    supabase.rpc('admin_trainer_athletes_detail', { p_trainer_id: id }).then(({ data, error: err }) => {
+      if (cancelled) return
+      const res = data as { success?: boolean; athletes?: TrainerAthlete[] } | null
+      if (err || !res?.success || !Array.isArray(res.athletes)) {
+        setAthletesError(true)
+        setAthletesLoading(false)
+        return
+      }
+      setAthletes(res.athletes)
+      setAthletesLoading(false)
+    })
+    return () => { cancelled = true }
+  }, [id])
+
+  const sortedAthletes = useMemo(() => {
+    if (!athletes) return []
+    return [...athletes].sort((a, b) => {
+      const au = isUrgentAthlete(a) ? 0 : 1
+      const bu = isUrgentAthlete(b) ? 0 : 1
+      if (au !== bu) return au - bu
+      return (a.full_name ?? '').localeCompare(b.full_name ?? '', 'sr')
+    })
+  }, [athletes])
 
   const load = useCallback(async () => {
     if (!id) {
@@ -472,6 +573,83 @@ export default function TrenerDetalji() {
               </span>
             </div>
             <p className="text-xs text-muted-foreground">Pretplata se menja u modulu Pretplate.</p>
+          </Section>
+
+          <Section title={`Vežbaci${athletes ? ` (${athletes.length})` : ''}`}>
+            {athletesLoading ? (
+              <div className="space-y-3">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="h-20 animate-pulse rounded-2xl bg-muted" />
+                ))}
+              </div>
+            ) : athletesError ? (
+              <p className="text-sm text-muted-foreground">Nije moguće učitati vežbače.</p>
+            ) : sortedAthletes.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Ovaj trener nema vežbača.</p>
+            ) : (
+              <div className="space-y-2">
+                {sortedAthletes.map((a) => {
+                  const urgent = isUrgentAthlete(a)
+                  return (
+                    <div
+                      key={a.athlete_id}
+                      className={cn(
+                        'rounded-2xl border p-3',
+                        urgent ? 'border-red-200 bg-red-50/60' : 'border-border bg-background',
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Avatar url={a.avatar_url} name={a.full_name} />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5">
+                            <RiskDot risk={a.risk} />
+                            <span className="truncate font-medium text-foreground">
+                              {a.full_name || 'Bez imena'}
+                            </span>
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            Poslednji trening: {fmtRelativeDays(a.last_workout_at)} ·{' '}
+                            {fmtInt(a.workouts_30d)} u 30 dana
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-2.5 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs">
+                        <div>
+                          {a.membership ? (
+                            <>
+                              <span className="font-medium text-foreground">
+                                {a.membership.plan_name || 'Plan'}
+                              </span>
+                              {a.membership.price != null && (
+                                <span className="text-muted-foreground"> · {fmtInt(a.membership.price)} RSD</span>
+                              )}
+                            </>
+                          ) : (
+                            <span className="text-muted-foreground">Bez članarine</span>
+                          )}
+                        </div>
+                        {a.membership?.days_left != null && (
+                          <span
+                            className={cn(
+                              'font-semibold tabular-nums',
+                              a.membership.days_left < 0 ? 'text-red-600' : 'text-muted-foreground',
+                            )}
+                          >
+                            {a.membership.days_left} dana
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        {a.paid_count ?? 0} {a.paid_count === 1 ? 'plaćanje' : 'plaćanja'} -{' '}
+                        {fmtInt(a.paid_total_rsd)} RSD
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </Section>
 
           <Section title="Meta">
