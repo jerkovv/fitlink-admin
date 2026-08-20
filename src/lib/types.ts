@@ -18,6 +18,8 @@ export type ListTrainer = {
   sub_plan: string | null
   sub_access_until: string | null
   athlete_count: number | null
+  /** Oznacen u admin_test_accounts. Nalog se time ne dira - samo se prikazuje odvojeno. */
+  is_test: boolean
 }
 
 // Jedan red iz admin_list_subscriptions() RPC-a (svi treneri + stanje pretplate).
@@ -61,6 +63,8 @@ export type ListAthlete = {
   workouts_done: number | null
   last_workout: string | null
   programs_count: number | null
+  /** Oznacen u admin_test_accounts. Nalog se time ne dira - samo se prikazuje odvojeno. */
+  is_test: boolean
 }
 
 // Jedna vezba iz exercises tabele (select *). Admin cita/menja direktno (admin RLS).

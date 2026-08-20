@@ -17,6 +17,7 @@ import {
   TableCell,
 } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
+import { PrikazPrekidac, OznakaDugme, type Prikaz } from '@/components/TestNalozi'
 
 type SortKey = 'name' | 'created' | 'athletes'
 
@@ -73,6 +74,8 @@ export default function Treneri() {
   const [q, setQ] = useState('')
   const [sortKey, setSortKey] = useState<SortKey>('created')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
+  // Podrazumevano se gledaju PRAVI korisnici; test nalozi su svoja grupa.
+  const [prikaz, setPrikaz] = useState<Prikaz>('pravi')
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -96,8 +99,11 @@ export default function Treneri() {
     }
   }
 
+  const brojPravih = (rows ?? []).filter((t) => !t.is_test).length
+  const brojTest = (rows ?? []).filter((t) => t.is_test).length
+
   const filtered = useMemo(() => {
-    const base = rows ?? []
+    const base = (rows ?? []).filter((t) => (prikaz === 'test' ? t.is_test : !t.is_test))
     const needle = q.trim().toLowerCase()
     const f = needle
       ? base.filter(
@@ -114,7 +120,7 @@ export default function Treneri() {
       return sortDir === 'asc' ? cmp : -cmp
     })
     return sorted
-  }, [rows, q, sortKey, sortDir])
+  }, [rows, q, sortKey, sortDir, prikaz])
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -122,13 +128,26 @@ export default function Treneri() {
         <div>
           <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">Treneri</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {rows ? `${fmtInt(rows.length)} trenera na platformi.` : 'Svi treneri na platformi.'}
+            {rows
+              ? prikaz === 'test'
+                ? `${fmtInt(brojTest)} test naloga. Nalozi se ne diraju - ovo je samo oznaka.`
+                : `${fmtInt(brojPravih)} trenera na platformi.`
+              : 'Svi treneri na platformi.'}
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={load} disabled={loading}>
           <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
           Osveži
         </Button>
+      </div>
+
+      <div className="mb-4">
+        <PrikazPrekidac
+          prikaz={prikaz}
+          onChange={setPrikaz}
+          brojPravih={brojPravih}
+          brojTest={brojTest}
+        />
       </div>
 
       <div className="mb-4 relative max-w-sm">
@@ -179,6 +198,7 @@ export default function Treneri() {
                   onSort={onSort}
                   className="hidden sm:table-cell"
                 />
+                <TableHead className="w-10" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -210,7 +230,7 @@ export default function Treneri() {
                 ))
               ) : filtered.length === 0 ? (
                 <TableRow className="hover:bg-transparent">
-                  <TableCell colSpan={6} className="py-16 text-center">
+                  <TableCell colSpan={7} className="py-16 text-center">
                     <div className="text-sm text-muted-foreground">
                       {rows && rows.length > 0
                         ? 'Nema trenera za tu pretragu.'
@@ -250,6 +270,9 @@ export default function Treneri() {
                     </TableCell>
                     <TableCell className="hidden sm:table-cell tabular-nums text-muted-foreground">
                       {fmtDMY(t.created_at)}
+                    </TableCell>
+                    <TableCell className="w-10 pr-2">
+                      <OznakaDugme userId={t.id} isTest={t.is_test} onDone={load} />
                     </TableCell>
                   </TableRow>
                 ))

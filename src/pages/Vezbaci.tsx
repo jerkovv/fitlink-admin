@@ -17,6 +17,7 @@ import {
   TableCell,
 } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
+import { PrikazPrekidac, OznakaDugme, type Prikaz } from '@/components/TestNalozi'
 
 type SortKey = 'name' | 'workouts' | 'joined'
 
@@ -75,6 +76,8 @@ export default function Vezbaci() {
   const [trainerFilter, setTrainerFilter] = useState('') // '' svi, NO_TRAINER bez, inace trainer_id
   const [sortKey, setSortKey] = useState<SortKey>('joined')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
+  // Podrazumevano se gledaju PRAVI korisnici; test nalozi su svoja grupa.
+  const [prikaz, setPrikaz] = useState<Prikaz>('pravi')
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -108,8 +111,11 @@ export default function Vezbaci() {
       .sort((a, b) => a.name.localeCompare(b.name, 'sr'))
   }, [rows])
 
+  const brojPravih = (rows ?? []).filter((a) => !a.is_test).length
+  const brojTest = (rows ?? []).filter((a) => a.is_test).length
+
   const filtered = useMemo(() => {
-    const base = rows ?? []
+    const base = (rows ?? []).filter((a) => (prikaz === 'test' ? a.is_test : !a.is_test))
     const needle = q.trim().toLowerCase()
     const f = base.filter((a) => {
       if (trainerFilter === NO_TRAINER && a.trainer_id) return false
@@ -128,7 +134,7 @@ export default function Vezbaci() {
       return sortDir === 'asc' ? cmp : -cmp
     })
     return sorted
-  }, [rows, q, trainerFilter, sortKey, sortDir])
+  }, [rows, q, trainerFilter, sortKey, sortDir, prikaz])
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -136,13 +142,26 @@ export default function Vezbaci() {
         <div>
           <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">Vežbači</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {rows ? `${fmtInt(rows.length)} vežbača na platformi.` : 'Svi vežbači na platformi.'}
+            {rows
+              ? prikaz === 'test'
+                ? `${fmtInt(brojTest)} test naloga. Nalozi se ne diraju - ovo je samo oznaka.`
+                : `${fmtInt(brojPravih)} vežbača na platformi.`
+              : 'Svi vežbači na platformi.'}
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={load} disabled={loading}>
           <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
           Osveži
         </Button>
+      </div>
+
+      <div className="mb-4">
+        <PrikazPrekidac
+          prikaz={prikaz}
+          onChange={setPrikaz}
+          brojPravih={brojPravih}
+          brojTest={brojTest}
+        />
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -210,6 +229,7 @@ export default function Vezbaci() {
                   onSort={onSort}
                   className="hidden sm:table-cell"
                 />
+                <TableHead className="w-10" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -244,7 +264,7 @@ export default function Vezbaci() {
                 ))
               ) : filtered.length === 0 ? (
                 <TableRow className="hover:bg-transparent">
-                  <TableCell colSpan={7} className="py-16 text-center text-sm text-muted-foreground">
+                  <TableCell colSpan={8} className="py-16 text-center text-sm text-muted-foreground">
                     {rows && rows.length > 0 ? 'Nema vežbača za taj filter.' : 'Još nema vežbača.'}
                   </TableCell>
                 </TableRow>
@@ -283,6 +303,9 @@ export default function Vezbaci() {
                     </TableCell>
                     <TableCell className="hidden sm:table-cell tabular-nums text-muted-foreground">
                       {fmtDMY(a.joined_at)}
+                    </TableCell>
+                    <TableCell className="w-10 pr-2">
+                      <OznakaDugme userId={a.id} isTest={a.is_test} onDone={load} />
                     </TableCell>
                   </TableRow>
                 ))
