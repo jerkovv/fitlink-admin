@@ -6,6 +6,7 @@ import {
   Dumbbell,
   Apple,
   Flag,
+  Clapperboard,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -24,4 +25,5 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/vezbe', label: 'Vežbe', icon: Dumbbell },
   { to: '/namirnice', label: 'Namirnice', icon: Apple },
   { to: '/prijave', label: 'Prijave', icon: Flag },
+  { to: '/ugc-prijave', label: 'UGC prijave', icon: Clapperboard },
 ]
