@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { RefreshCw, TriangleAlert, ExternalLink, Loader2 } from 'lucide-react'
+import { RefreshCw, TriangleAlert, ExternalLink, Loader2, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { fmtDMY } from '@/lib/format'
@@ -14,6 +14,13 @@ import {
   TableCell,
 } from '@/components/ui/table'
 import { Sheet, SheetContent, SheetTitle, SheetDescription } from '@/components/ui/sheet'
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+} from '@/components/ui/alert-dialog'
 import { cn } from '@/lib/utils'
 
 // Prijave UGC kreatora sa fitlink.rs/ugc-kreatori (tabela ugc_prijave).
@@ -152,6 +159,8 @@ export default function UgcPrijave() {
   const [filter, setFilter] = useState<FilterKey>('all')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -195,6 +204,26 @@ export default function UgcPrijave() {
       return
     }
     toast.success(`Status: ${statusInfo(status).label}`)
+  }
+
+  const toDelete = deleteId ? (rows ?? []).find((r) => r.id === deleteId) ?? null : null
+
+  const runDelete = async () => {
+    if (!toDelete) return
+    setDeleting(true)
+    const { error: err, count } = await supabase
+      .from('ugc_prijave')
+      .delete({ count: 'exact' })
+      .eq('id', toDelete.id)
+    setDeleting(false)
+    if (err || !count) {
+      toast.error('Brisanje nije uspelo.')
+      return
+    }
+    setRows((r) => (r ? r.filter((x) => x.id !== toDelete.id) : r))
+    if (selectedId === toDelete.id) setSelectedId(null)
+    setDeleteId(null)
+    toast.success('Prijava obrisana')
   }
 
   return (
@@ -255,13 +284,14 @@ export default function UgcPrijave() {
                 <TableHead className="hidden lg:table-cell">Dostupnost</TableHead>
                 <TableHead className="hidden sm:table-cell">Datum</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading && !rows ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i} className="hover:bg-transparent">
-                    {Array.from({ length: 7 }).map((_, j) => (
+                    {Array.from({ length: 8 }).map((_, j) => (
                       <TableCell key={j} className={cn(j > 0 && j < 6 && 'hidden sm:table-cell')}>
                         <div className="h-4 w-24 animate-pulse rounded bg-muted" />
                       </TableCell>
@@ -270,7 +300,7 @@ export default function UgcPrijave() {
                 ))
               ) : filtered.length === 0 ? (
                 <TableRow className="hover:bg-transparent">
-                  <TableCell colSpan={7} className="py-16 text-center text-sm text-muted-foreground">
+                  <TableCell colSpan={8} className="py-16 text-center text-sm text-muted-foreground">
                     Nema prijava.
                   </TableCell>
                 </TableRow>
@@ -298,6 +328,20 @@ export default function UgcPrijave() {
                     </TableCell>
                     <TableCell>
                       <StatusSelect row={r} busy={busyId === r.id} onChange={setStatus} />
+                    </TableCell>
+                    <TableCell className="pr-3">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                        aria-label="Obriši prijavu"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setDeleteId(r.id)
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))
@@ -384,9 +428,42 @@ export default function UgcPrijave() {
                 </KV>
               </Group>
             </div>
+
+            <div className="border-t border-border p-5">
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                onClick={() => setDeleteId(selected.id)}
+              >
+                <Trash2 className="h-4 w-4" />
+                Obriši prijavu
+              </Button>
+            </div>
           </SheetContent>
         )}
       </Sheet>
+
+      <AlertDialog open={!!toDelete} onOpenChange={(o) => !o && !deleting && setDeleteId(null)}>
+        {toDelete && (
+          <AlertDialogContent>
+            <AlertDialogTitle>Obrisati prijavu?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Prijava kreatora {toDelete.ime_prezime} ({toDelete.email}) se trajno briše. Ovo se ne može
+              vratiti.
+            </AlertDialogDescription>
+            <AlertDialogFooter>
+              <Button variant="outline" size="sm" onClick={() => setDeleteId(null)} disabled={deleting}>
+                Otkaži
+              </Button>
+              <Button variant="destructive" size="sm" onClick={runDelete} disabled={deleting}>
+                {deleting && <Loader2 className="h-4 w-4 animate-spin" />}
+                Obriši
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        )}
+      </AlertDialog>
     </div>
   )
 }
