@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
-import { ArrowLeft, Save, Loader2, TriangleAlert } from 'lucide-react'
+import { ArrowLeft, Save, Loader2, TriangleAlert, ClipboardList } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import type { ListTrainer } from '@/lib/types'
@@ -389,10 +389,18 @@ export default function TrenerDetalji() {
             )}
           </div>
         </div>
-        <Button onClick={save} disabled={saving || loading || !f}>
-          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          Sačuvaj
-        </Button>
+        <div className="flex items-center gap-2">
+          {id && (
+            <Button variant="outline" onClick={() => nav(`/planovi/${id}`)}>
+              <ClipboardList className="h-4 w-4" />
+              Planovi
+            </Button>
+          )}
+          <Button onClick={save} disabled={saving || loading || !f}>
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            Sačuvaj
+          </Button>
+        </div>
       </div>
 
       {error ? (

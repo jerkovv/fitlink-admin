@@ -6,6 +6,7 @@ import {
   Dumbbell,
   Apple,
   Flag,
+  ClipboardList,
   Clapperboard,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -21,6 +22,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Pregled', icon: LayoutDashboard },
   { to: '/treneri', label: 'Treneri', icon: UserCog },
   { to: '/vezbaci', label: 'Vežbači', icon: Users },
+  { to: '/planovi', label: 'Planovi', icon: ClipboardList },
   { to: '/pretplate', label: 'Pretplate', icon: CreditCard },
   { to: '/vezbe', label: 'Vežbe', icon: Dumbbell },
   { to: '/namirnice', label: 'Namirnice', icon: Apple },

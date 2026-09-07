@@ -126,3 +126,96 @@ export type FoodItem = {
   created_by: string | null
   created_at: string
 }
+
+// ---------------------------------------------------------------------------
+// Planovi (admin_list_trainer_plans / admin_trainer_plans_detail)
+// ---------------------------------------------------------------------------
+
+/**
+ * Jedan red liste "Planovi" - zbirovi po treneru.
+ *
+ * "Poslato" vs "nacrt" je vazna razlika, ne kozmetika: vezbac vidi SAMO planove
+ * sa published_at. Nacrt je plan koji trener jos gradi - ali gomila nacrta kod
+ * jednog trenera je znak da dodela puca, pa se broji odvojeno.
+ */
+export type PlanTrainerRow = {
+  id: string
+  full_name: string | null
+  email: string | null
+  avatar_url: string | null
+  created_at: string
+  is_test: boolean
+  sablona_treninga: number
+  sablona_ishrane: number
+  programa_poslato: number
+  programa_nacrt: number
+  ishrane_poslato: number
+  ishrane_nacrt: number
+  vezbaca: number
+  /** Koliko vezbaca stvarno ima bar jedan plan koji vidi. */
+  vezbaca_sa_planom: number
+  poslednji_plan_at: string | null
+  planova_ukupno: number
+}
+
+export type PlanProgramTemplate = {
+  id: string
+  name: string
+  goal: string | null
+  level: string | null
+  created_at: string
+  dana: number
+  vezbi: number
+  puta_dodeljen: number
+}
+
+export type PlanNutritionTemplate = {
+  id: string
+  name: string
+  goal: string | null
+  target_kcal: number | null
+  created_at: string
+  dana: number
+  obroka: number
+  puta_dodeljen: number
+}
+
+export type PlanAssignedProgram = {
+  id: string
+  name: string
+  athlete_id: string
+  athlete_name: string | null
+  assigned_at: string
+  published_at: string | null
+  iz_sablona: boolean
+  sablon_naziv: string | null
+  dana: number
+  vezbi: number
+  treninga: number
+  poslednji_trening_at: string | null
+}
+
+export type PlanAssignedNutrition = {
+  id: string
+  name: string
+  athlete_id: string
+  athlete_name: string | null
+  assigned_at: string
+  published_at: string | null
+  target_kcal: number | null
+  is_active: boolean | null
+  iz_sablona: boolean
+  sablon_naziv: string | null
+  dana: number
+  obroka: number
+}
+
+export type TrainerPlansDetail = {
+  success: boolean
+  error?: string
+  trainer: { id: string; full_name: string | null; email: string | null; avatar_url: string | null }
+  program_templates: PlanProgramTemplate[]
+  nutrition_templates: PlanNutritionTemplate[]
+  assigned_programs: PlanAssignedProgram[]
+  assigned_nutrition: PlanAssignedNutrition[]
+}
