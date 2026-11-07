@@ -36,7 +36,7 @@ function Avatar({ url, name, email }: { url: string | null; name: string | null;
     return <img src={url} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
   }
   return (
-    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-semibold text-primary">
+    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-semibold text-brand">
       {initials(name, email)}
     </div>
   )
@@ -70,7 +70,7 @@ function SortHead({
         )}
       >
         {label}
-        <Icon className={cn('h-3.5 w-3.5', active ? 'text-primary' : 'text-muted-foreground/50')} />
+        <Icon className={cn('h-3.5 w-3.5', active ? 'text-brand' : 'text-muted-foreground/50')} />
       </button>
     </TableHead>
   )
@@ -106,7 +106,7 @@ function KartaZbir({
             'flex h-8 w-8 items-center justify-center rounded-lg',
             tonUpozorenja && broj > 0
               ? 'bg-destructive/10 text-destructive'
-              : 'bg-accent text-primary',
+              : 'bg-accent text-brand',
           )}
         >
           <Ikona className="h-4 w-4" />

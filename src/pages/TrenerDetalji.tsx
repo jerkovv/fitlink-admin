@@ -161,7 +161,7 @@ function Avatar({ url, name }: { url: string | null; name: string | null }) {
     return <img src={url} alt="" className="h-9 w-9 shrink-0 rounded-full object-cover" />
   }
   return (
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-semibold text-primary">
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-semibold text-brand">
       {initials(name, null)}
     </div>
   )

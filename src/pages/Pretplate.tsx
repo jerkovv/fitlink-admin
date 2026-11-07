@@ -193,7 +193,7 @@ function SortHead({
         className={cn('inline-flex items-center gap-1 transition-colors hover:text-foreground', active && 'text-foreground')}
       >
         {label}
-        <Icon className={cn('h-3.5 w-3.5', active ? 'text-primary' : 'text-muted-foreground/50')} />
+        <Icon className={cn('h-3.5 w-3.5', active ? 'text-brand' : 'text-muted-foreground/50')} />
       </button>
     </TableHead>
   )
@@ -510,7 +510,7 @@ export default function Pretplate() {
                     </TableCell>
                     <TableCell>
                       {r.admin_note ? (
-                        <StickyNote className="h-4 w-4 text-primary" aria-label="Ima napomenu" />
+                        <StickyNote className="h-4 w-4 text-brand" aria-label="Ima napomenu" />
                       ) : null}
                     </TableCell>
                   </TableRow>

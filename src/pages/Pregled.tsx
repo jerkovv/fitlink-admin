@@ -67,7 +67,7 @@ function SectionLabel({ children }: { children: ReactNode }) {
 function HeroKpi({ label, value, icon: Icon }: { label: string; value: string; icon: LucideIcon }) {
   return (
     <Card className="p-5">
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent text-primary">
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent text-brand">
         <Icon className="h-5 w-5" />
       </div>
       <div className="mt-4 font-display text-3xl font-bold leading-none tracking-tight tabular-nums text-foreground">

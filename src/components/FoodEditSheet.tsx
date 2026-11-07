@@ -423,7 +423,7 @@ export function FoodEditSheet({
                 size="sm"
                 onClick={doDelete}
                 disabled={deleting}
-                className={cn('bg-red-600 text-white hover:bg-red-700')}
+                className={cn('bg-destructive text-destructive-foreground hover:bg-destructive/90')}
               >
                 {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                 Obriši

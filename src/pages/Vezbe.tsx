@@ -91,9 +91,9 @@ function MediaStatus({ ex }: { ex: Exercise }) {
   return (
     <div className="flex items-center gap-1.5">
       <ImageIcon
-        className={cn('h-4 w-4', ex.thumbnail_url ? 'text-primary' : 'text-muted-foreground/30')}
+        className={cn('h-4 w-4', ex.thumbnail_url ? 'text-brand' : 'text-muted-foreground/30')}
       />
-      <Video className={cn('h-4 w-4', ex.video_url ? 'text-primary' : 'text-muted-foreground/30')} />
+      <Video className={cn('h-4 w-4', ex.video_url ? 'text-brand' : 'text-muted-foreground/30')} />
     </div>
   )
 }
@@ -126,7 +126,7 @@ function SortableRow({ ex }: { ex: Exercise }) {
         <div className="truncate text-xs text-muted-foreground">{equipLabel(ex.equipment)}</div>
       </div>
       <div className="flex items-center gap-1.5 tabular-nums text-xs text-muted-foreground">
-        {ex.popularity_locked && <Lock className="h-3.5 w-3.5 text-primary" />}
+        {ex.popularity_locked && <Lock className="h-3.5 w-3.5 text-brand" />}
         {fmtInt(ex.popularity)}
       </div>
     </div>
@@ -432,7 +432,7 @@ export default function Vezbe() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1.5 tabular-nums text-muted-foreground">
-                          {ex.popularity_locked && <Lock className="h-3.5 w-3.5 text-primary" />}
+                          {ex.popularity_locked && <Lock className="h-3.5 w-3.5 text-brand" />}
                           {fmtInt(ex.popularity)}
                         </div>
                       </TableCell>

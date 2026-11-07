@@ -10,7 +10,7 @@ export function Blocked() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-background px-6 text-center">
       <div className="w-full max-w-sm">
         <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-accent">
-          <ShieldAlert className="h-7 w-7 text-primary" />
+          <ShieldAlert className="h-7 w-7 text-brand" />
         </div>
         <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
           Nemaš admin pristup

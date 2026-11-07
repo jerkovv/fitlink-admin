@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
+import { LogoMark } from '@/components/Logo'
 
 export default function Login() {
   const { session, isAdmin, loading } = useAuth()
@@ -47,15 +48,13 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/40 px-4">
+    <div className="flex min-h-screen items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="mb-6 flex flex-col items-center gap-3 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-lg font-bold text-primary-foreground">
-            F
-          </div>
+          <LogoMark className="h-12 w-12" rounded="rounded-2xl" />
           <div>
-            <div className="font-display text-xl font-bold tracking-tight text-foreground">
-              Fit<span className="text-primary">Link</span> Admin
+            <div className="font-display text-2xl font-extrabold tracking-tight text-foreground">
+              FitLink <span className="text-brand">Admin</span>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">Prijava za administratore</p>
           </div>

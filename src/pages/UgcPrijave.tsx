@@ -90,7 +90,7 @@ function Ext({ href, children }: { href: string; children?: React.ReactNode }) {
       target="_blank"
       rel="noopener noreferrer"
       onClick={(e) => e.stopPropagation()}
-      className="inline-flex items-center gap-1 break-all text-primary underline-offset-2 hover:underline"
+      className="inline-flex items-center gap-1 break-all text-brand underline-offset-2 hover:underline"
     >
       {children ?? href}
       <ExternalLink className="h-3 w-3 shrink-0" />
@@ -367,12 +367,12 @@ export default function UgcPrijave() {
             <div className="flex-1 space-y-6 overflow-y-auto p-5">
               <Group title="Osnovno">
                 <KV label="Telefon">
-                  <a href={`tel:${selected.telefon}`} className="text-primary">
+                  <a href={`tel:${selected.telefon}`} className="text-brand">
                     {selected.telefon}
                   </a>
                 </KV>
                 <KV label="Email">
-                  <a href={`mailto:${selected.email}`} className="text-primary">
+                  <a href={`mailto:${selected.email}`} className="text-brand">
                     {selected.email}
                   </a>
                 </KV>
