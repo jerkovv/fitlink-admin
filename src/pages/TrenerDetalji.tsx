@@ -172,7 +172,9 @@ function fmtRelativeDays(iso: string | null): string {
   if (!iso) return '-'
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return '-'
-  const days = Math.floor((Date.now() - d.getTime()) / 86400000)
+  // Po kalendarskom danu, ne po 24 sata: trening juce u 10:29 je "juče" i danas u 9:00.
+  const pocetak = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime()
+  const days = Math.round((pocetak(new Date()) - pocetak(d)) / 86400000)
   if (days <= 0) return 'danas'
   if (days === 1) return 'juče'
   if (days < 30) return `pre ${days} dana`
