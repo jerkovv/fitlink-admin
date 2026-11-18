@@ -53,7 +53,7 @@ export default function Login() {
         <div className="mb-6 flex flex-col items-center gap-3 text-center">
           <LogoMark className="h-12 w-12" rounded="rounded-2xl" />
           <div>
-            <div className="font-display text-2xl font-extrabold tracking-tight text-foreground">
+            <div className="font-display text-2xl font-bold tracking-tight text-foreground">
               FitLink <span className="text-brand">Admin</span>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">Prijava za administratore</p>

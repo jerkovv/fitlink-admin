@@ -11,7 +11,7 @@ function Wordmark() {
   return (
     <div className="flex items-center gap-2">
       <LogoMark />
-      <span className="font-display text-[17px] font-extrabold tracking-tight text-foreground">FitLink</span>
+      <span className="font-display text-[17px] font-bold tracking-tight text-foreground">FitLink</span>
       <span className="ml-0.5 rounded-md bg-accent px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-accent-foreground">
         Admin
       </span>
