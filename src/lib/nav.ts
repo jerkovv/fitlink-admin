@@ -8,6 +8,7 @@ import {
   Flag,
   ClipboardList,
   Clapperboard,
+  Mail,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -28,4 +29,5 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/namirnice', label: 'Namirnice', icon: Apple },
   { to: '/prijave', label: 'Prijave', icon: Flag },
   { to: '/ugc-prijave', label: 'UGC prijave', icon: Clapperboard },
+  { to: '/mejlovi', label: 'Mejlovi', icon: Mail },
 ]
