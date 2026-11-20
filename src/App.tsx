@@ -15,6 +15,7 @@ import Namirnice from '@/pages/Namirnice'
 import Prijave from '@/pages/Prijave'
 import UgcPrijave from '@/pages/UgcPrijave'
 import Mejlovi from '@/pages/Mejlovi'
+import Podesavanja from '@/pages/Podesavanja'
 
 export default function App() {
   return (
@@ -37,6 +38,7 @@ export default function App() {
           <Route path="/prijave" element={<Prijave />} />
           <Route path="/ugc-prijave" element={<UgcPrijave />} />
           <Route path="/mejlovi" element={<Mejlovi />} />
+          <Route path="/podesavanja" element={<Podesavanja />} />
         </Route>
       </Route>
 
