@@ -20,6 +20,14 @@ export type ListTrainer = {
   athlete_count: number | null
   /** Oznacen u admin_test_accounts. Nalog se time ne dira - samo se prikazuje odvojeno. */
   is_test: boolean
+  /** Proba od 30 dana bez kartice (trialing, bez Stripe pretplate). */
+  proba_bez_kartice?: boolean | null
+  email_confirmed_at?: string | null
+  last_sign_in_at?: string | null
+  /** Telefoni sa kojih stizu obavestenja: platforma, paket i kad je znak poslednji put osvezen. */
+  uredjaji?: { platforma: string; paket: string | null; poslednji: string | null; broj: number }[] | null
+  /** Poslednja upotreba sata (trenerov Apple Watch), ako je uparen. */
+  sat_poslednji?: string | null
 }
 
 // Jedan red iz admin_list_subscriptions() RPC-a (svi treneri + stanje pretplate).

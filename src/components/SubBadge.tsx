@@ -13,12 +13,13 @@ const TONES: Record<Tone, string> = {
 function subInfo(
   status: string | null | undefined,
   accessUntil: string | null | undefined,
+  bezKartice?: boolean | null,
 ): { label: string; tone: Tone } {
   if (!status) return { label: 'Bez pretplate', tone: 'gray' }
   if (status === 'canceled') return { label: 'Otkazano', tone: 'red' }
   const expired = accessUntil ? new Date(accessUntil).getTime() <= Date.now() : false
   if (status === 'expired' || expired) return { label: 'Istekla', tone: 'gray' }
-  if (status === 'trialing') return { label: 'Probni period', tone: 'amber' }
+  if (status === 'trialing') return { label: bezKartice ? 'Proba bez kartice' : 'Probni period', tone: 'amber' }
   if (status === 'active') return { label: 'Aktivna', tone: 'green' }
   if (status === 'past_due') return { label: 'Kasni plaćanje', tone: 'amber' }
   if (status === 'incomplete') return { label: 'Nezavršeno', tone: 'gray' }
@@ -28,13 +29,15 @@ function subInfo(
 export function SubBadge({
   status,
   accessUntil,
+  bezKartice,
   className,
 }: {
   status: string | null | undefined
   accessUntil: string | null | undefined
+  bezKartice?: boolean | null
   className?: string
 }) {
-  const { label, tone } = subInfo(status, accessUntil)
+  const { label, tone } = subInfo(status, accessUntil, bezKartice)
   return (
     <span
       className={cn(

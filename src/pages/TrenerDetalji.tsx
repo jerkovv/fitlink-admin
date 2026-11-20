@@ -5,7 +5,7 @@ import { ArrowLeft, Save, Loader2, TriangleAlert, ClipboardList } from 'lucide-r
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import type { ListTrainer } from '@/lib/types'
-import { fmtDMY, fmtInt, initials } from '@/lib/format'
+import { fmtDMY, fmtDMYHM, fmtInt, initials, nazivPlatforme, prePre } from '@/lib/format'
 import { SubBadge } from '@/components/SubBadge'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -567,7 +567,7 @@ export default function TrenerDetalji() {
 
           <Section title="Pretplata">
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-              <SubBadge status={enriched?.sub_status} accessUntil={enriched?.sub_access_until} />
+              <SubBadge status={enriched?.sub_status} accessUntil={enriched?.sub_access_until} bezKartice={enriched?.proba_bez_kartice} />
               <span className="text-sm text-muted-foreground">
                 Plan: <span className="font-medium text-foreground">{planLabel(enriched?.sub_plan)}</span>
               </span>
@@ -583,6 +583,51 @@ export default function TrenerDetalji() {
               </span>
             </div>
             <p className="text-xs text-muted-foreground">Pretplata se menja u modulu Pretplate.</p>
+          </Section>
+
+          <Section title="Nalog i uređaji">
+            <div className="grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-3">
+              <span className="text-muted-foreground">
+                Registrovan: <span className="font-medium text-foreground">{fmtDMYHM(enriched?.created_at)}</span>
+              </span>
+              <span className="text-muted-foreground">
+                Potvrdio mejl: <span className="font-medium text-foreground">{fmtDMYHM(enriched?.email_confirmed_at)}</span>
+              </span>
+              <span className="text-muted-foreground">
+                Poslednja prijava:{' '}
+                <span className="font-medium text-foreground">
+                  {fmtDMYHM(enriched?.last_sign_in_at)}
+                  {enriched?.last_sign_in_at ? ` (${prePre(enriched.last_sign_in_at)})` : ''}
+                </span>
+              </span>
+            </div>
+            {(enriched?.uredjaji ?? []).length === 0 && !enriched?.sat_poslednji ? (
+              <p className="text-sm text-muted-foreground">Nijedan telefon nije prijavljen za obaveštenja.</p>
+            ) : (
+              <div className="space-y-2">
+                {(enriched?.uredjaji ?? []).map((u) => (
+                  <div key={`${u.platforma}-${u.paket}`} className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-2xl bg-muted px-4 py-3 text-sm">
+                    <span className="font-semibold text-foreground">{nazivPlatforme(u.platforma)}</span>
+                    <span className="text-muted-foreground">{u.paket || '-'}</span>
+                    <span className="text-muted-foreground">
+                      poslednji put: <span className="text-foreground">{fmtDMYHM(u.poslednji)}</span>
+                    </span>
+                    {u.broj > 1 ? <span className="text-muted-foreground">{u.broj} uređaja</span> : null}
+                  </div>
+                ))}
+                {enriched?.sat_poslednji ? (
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-2xl bg-muted px-4 py-3 text-sm">
+                    <span className="font-semibold text-foreground">Sat</span>
+                    <span className="text-muted-foreground">
+                      poslednji put: <span className="text-foreground">{fmtDMYHM(enriched.sat_poslednji)}</span>
+                    </span>
+                  </div>
+                ) : null}
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Uređaj se vidi kad aplikacija prijavi telefon za obaveštenja. Model telefona i verzija aplikacije se ne čuvaju.
+            </p>
           </Section>
 
           <Section title={`Vežbaci${athletes ? ` (${athletes.length})` : ''}`}>

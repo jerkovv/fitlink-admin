@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Search, RefreshCw, ArrowUp, ArrowDown, ChevronsUpDown, TriangleAlert } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import type { ListTrainer } from '@/lib/types'
-import { fmtDMY, fmtInt, initials } from '@/lib/format'
+import { fmtDMY, fmtDMYHM, fmtInt, initials, nazivPlatforme, prePre } from '@/lib/format'
 import { SubBadge } from '@/components/SubBadge'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -190,6 +190,8 @@ export default function Treneri() {
                   onSort={onSort}
                 />
                 <TableHead>Pretplata</TableHead>
+                <TableHead className="hidden xl:table-cell">Poslednja prijava</TableHead>
+                <TableHead className="hidden xl:table-cell">Uređaj</TableHead>
                 <SortHead
                   label="Član od"
                   col="created"
@@ -223,6 +225,12 @@ export default function Treneri() {
                     <TableCell>
                       <div className="h-5 w-20 animate-pulse rounded-full bg-muted" />
                     </TableCell>
+                    <TableCell className="hidden xl:table-cell">
+                      <div className="h-4 w-16 animate-pulse rounded bg-muted" />
+                    </TableCell>
+                    <TableCell className="hidden xl:table-cell">
+                      <div className="h-5 w-16 animate-pulse rounded-full bg-muted" />
+                    </TableCell>
                     <TableCell className="hidden sm:table-cell">
                       <div className="h-4 w-20 animate-pulse rounded bg-muted" />
                     </TableCell>
@@ -230,7 +238,7 @@ export default function Treneri() {
                 ))
               ) : filtered.length === 0 ? (
                 <TableRow className="hover:bg-transparent">
-                  <TableCell colSpan={7} className="py-16 text-center">
+                  <TableCell colSpan={9} className="py-16 text-center">
                     <div className="text-sm text-muted-foreground">
                       {rows && rows.length > 0
                         ? 'Nema trenera za tu pretragu.'
@@ -266,7 +274,25 @@ export default function Treneri() {
                     </TableCell>
                     <TableCell className="tabular-nums">{fmtInt(t.athlete_count)}</TableCell>
                     <TableCell>
-                      <SubBadge status={t.sub_status} accessUntil={t.sub_access_until} />
+                      <SubBadge status={t.sub_status} accessUntil={t.sub_access_until} bezKartice={t.proba_bez_kartice} />
+                    </TableCell>
+                    <TableCell className="hidden xl:table-cell text-muted-foreground" title={fmtDMYHM(t.last_sign_in_at)}>
+                      {prePre(t.last_sign_in_at)}
+                    </TableCell>
+                    <TableCell className="hidden xl:table-cell">
+                      <div className="flex flex-wrap gap-1">
+                        {(t.uredjaji ?? []).length === 0 && !t.sat_poslednji ? (
+                          <span className="text-muted-foreground">-</span>
+                        ) : null}
+                        {Array.from(new Set((t.uredjaji ?? []).map((u) => u.platforma))).map((p) => (
+                          <span key={p} className="rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-foreground">
+                            {nazivPlatforme(p)}
+                          </span>
+                        ))}
+                        {t.sat_poslednji ? (
+                          <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-foreground">Sat</span>
+                        ) : null}
+                      </div>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell tabular-nums text-muted-foreground">
                       {fmtDMY(t.created_at)}

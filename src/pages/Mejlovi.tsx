@@ -13,6 +13,7 @@ import {
   TableCell,
 } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
+import DnevnikMejlova from '@/pages/DnevnikMejlova'
 
 // Mejlovi povratka: trener je potvrdio nalog a nije pokrenuo pretplatu.
 // Mejl 1 ide 3 sata posle potvrde, mejl 2 tri dana kasnije. Podaci dolaze iz
@@ -142,7 +143,7 @@ function Zbir({ naziv, broj, deo }: { naziv: string; broj: number; deo?: string 
   )
 }
 
-export default function Mejlovi() {
+function PovratakTrenera() {
   const [rows, setRows] = useState<Red[] | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -322,6 +323,39 @@ export default function Mejlovi() {
           </Card>
         </>
       )}
+    </div>
+  )
+}
+
+// Stranica Mejlovi: "Svi mejlovi" (dnevnik svega sto FitLink salje, sa otvaranjem i klikom) i
+// "Povratak trenera" (stari pregled mejlova povratka sa probom i naplatom).
+export default function Mejlovi() {
+  const [deo, setDeo] = useState<'svi' | 'povratak'>('svi')
+  return (
+    <div className="mx-auto max-w-6xl">
+      <div className="mb-6">
+        <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">Mejlovi</h1>
+        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+          Svaki mejl koji FitLink pošalje: kome, kada, da li je otvoren i da li je kliknut.
+        </p>
+        <div className="mt-4 inline-flex rounded-lg bg-muted p-1">
+          {([['svi', 'Svi mejlovi'], ['povratak', 'Povratak trenera']] as const).map(([k, t]) => (
+            <button
+              key={k}
+              type="button"
+              onClick={() => setDeo(k)}
+              aria-pressed={deo === k}
+              className={cn(
+                'rounded-md px-3 py-1.5 text-sm font-medium transition',
+                deo === k ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground',
+              )}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      </div>
+      {deo === 'svi' ? <DnevnikMejlova /> : <PovratakTrenera />}
     </div>
   )
 }
