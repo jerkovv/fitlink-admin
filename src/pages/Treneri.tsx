@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Search, RefreshCw, ArrowUp, ArrowDown, ChevronsUpDown, TriangleAlert } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import type { ListTrainer } from '@/lib/types'
-import { fmtDMY, fmtDMYHM, fmtInt, initials, nazivPlatforme, prePre } from '@/lib/format'
+import { fmtDMY, fmtDMYHM, fmtInt, initials, kadAktivan, nazivPlatforme } from '@/lib/format'
 import { SubBadge } from '@/components/SubBadge'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -64,6 +64,15 @@ function SortHead({
       </button>
     </TableHead>
   )
+}
+
+// Sve odakle je nalog korisen: prijave sa telefona i racunara, plus telefoni za obavestenja.
+function platforme(t: ListTrainer): string[] {
+  const sve = [
+    ...(t.pristupi ?? []).map((p) => p.izvor).filter((i) => i !== 'ostalo'),
+    ...(t.uredjaji ?? []).map((u) => u.platforma),
+  ]
+  return ['ios', 'android', 'racunar'].filter((p) => sve.includes(p))
 }
 
 export default function Treneri() {
@@ -190,7 +199,7 @@ export default function Treneri() {
                   onSort={onSort}
                 />
                 <TableHead>Pretplata</TableHead>
-                <TableHead className="hidden xl:table-cell">Poslednja prijava</TableHead>
+                <TableHead className="hidden xl:table-cell">Poslednja aktivnost</TableHead>
                 <TableHead className="hidden xl:table-cell">Uređaj</TableHead>
                 <SortHead
                   label="Član od"
@@ -276,15 +285,18 @@ export default function Treneri() {
                     <TableCell>
                       <SubBadge status={t.sub_status} accessUntil={t.sub_access_until} bezKartice={t.proba_bez_kartice} />
                     </TableCell>
-                    <TableCell className="hidden xl:table-cell text-muted-foreground" title={fmtDMYHM(t.last_sign_in_at)}>
-                      {prePre(t.last_sign_in_at)}
+                    <TableCell
+                      className="hidden xl:table-cell whitespace-nowrap text-muted-foreground"
+                      title={fmtDMYHM(t.poslednja_aktivnost ?? t.last_sign_in_at)}
+                    >
+                      {kadAktivan(t.poslednja_aktivnost ?? t.last_sign_in_at)}
                     </TableCell>
                     <TableCell className="hidden xl:table-cell">
                       <div className="flex flex-wrap gap-1">
-                        {(t.uredjaji ?? []).length === 0 && !t.sat_poslednji ? (
+                        {platforme(t).length === 0 && !t.sat_poslednji ? (
                           <span className="text-muted-foreground">-</span>
                         ) : null}
-                        {Array.from(new Set((t.uredjaji ?? []).map((u) => u.platforma))).map((p) => (
+                        {platforme(t).map((p) => (
                           <span key={p} className="rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-foreground">
                             {nazivPlatforme(p)}
                           </span>

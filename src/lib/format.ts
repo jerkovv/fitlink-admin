@@ -38,10 +38,19 @@ export function prePre(iso: string | null | undefined): string {
   return `pre ${meseci} ${meseci < 5 ? 'meseca' : 'meseci'}`
 }
 
+// Kad je neko poslednji put koristio aplikaciju: "danas u 09:01", "juče u 19:20", pa kao prePre.
+export function kadAktivan(iso: string | null | undefined): string {
+  const opis = prePre(iso)
+  if (opis !== 'danas' && opis !== 'juče') return opis
+  const d = new Date(iso as string)
+  return `${opis} u ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
 // Platforma uredjaja za prikaz.
 export function nazivPlatforme(p: string | null | undefined): string {
   if (p === 'ios') return 'iPhone'
   if (p === 'android') return 'Android'
+  if (p === 'racunar') return 'Računar'
   return p || '-'
 }
 

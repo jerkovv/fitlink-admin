@@ -5,7 +5,7 @@ import { ArrowLeft, Save, Loader2, TriangleAlert, ClipboardList } from 'lucide-r
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import type { ListTrainer } from '@/lib/types'
-import { fmtDMY, fmtDMYHM, fmtInt, initials, nazivPlatforme, prePre } from '@/lib/format'
+import { fmtDMY, fmtDMYHM, fmtInt, initials, kadAktivan, nazivPlatforme, prePre } from '@/lib/format'
 import { SubBadge } from '@/components/SubBadge'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -373,6 +373,7 @@ export default function TrenerDetalji() {
   }
 
   const title = f ? f.full_name || 'Trener' : enriched?.full_name || 'Trener'
+  const pristupi = (enriched?.pristupi ?? []).filter((p) => p.izvor !== 'ostalo')
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -586,7 +587,7 @@ export default function TrenerDetalji() {
           </Section>
 
           <Section title="Nalog i uređaji">
-            <div className="grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
               <span className="text-muted-foreground">
                 Registrovan: <span className="font-medium text-foreground">{fmtDMYHM(enriched?.created_at)}</span>
               </span>
@@ -594,18 +595,32 @@ export default function TrenerDetalji() {
                 Potvrdio mejl: <span className="font-medium text-foreground">{fmtDMYHM(enriched?.email_confirmed_at)}</span>
               </span>
               <span className="text-muted-foreground">
-                Poslednja prijava:{' '}
+                Poslednja aktivnost:{' '}
+                <span className="font-medium text-foreground">
+                  {kadAktivan(enriched?.poslednja_aktivnost ?? enriched?.last_sign_in_at)}
+                </span>
+              </span>
+              <span className="text-muted-foreground">
+                Poslednji unos lozinke:{' '}
                 <span className="font-medium text-foreground">
                   {fmtDMYHM(enriched?.last_sign_in_at)}
                   {enriched?.last_sign_in_at ? ` (${prePre(enriched.last_sign_in_at)})` : ''}
                 </span>
               </span>
             </div>
-            {(enriched?.uredjaji ?? []).length === 0 && !enriched?.sat_poslednji ? (
-              <p className="text-sm text-muted-foreground">Nijedan telefon nije prijavljen za obaveštenja.</p>
+            {pristupi.length === 0 && (enriched?.uredjaji ?? []).length === 0 && !enriched?.sat_poslednji ? (
+              <p className="text-sm text-muted-foreground">Još nema zabeleženih uređaja.</p>
             ) : (
               <div className="space-y-2">
-                {(enriched?.uredjaji ?? []).map((u) => (
+                {pristupi.map((p) => (
+                  <div key={p.izvor} className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-2xl bg-muted px-4 py-3 text-sm">
+                    <span className="font-semibold text-foreground">{nazivPlatforme(p.izvor)}</span>
+                    <span className="text-muted-foreground">
+                      poslednji put: <span className="text-foreground">{fmtDMYHM(p.poslednji)}</span>
+                    </span>
+                  </div>
+                ))}
+                {pristupi.length === 0 && (enriched?.uredjaji ?? []).map((u) => (
                   <div key={`${u.platforma}-${u.paket}`} className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-2xl bg-muted px-4 py-3 text-sm">
                     <span className="font-semibold text-foreground">{nazivPlatforme(u.platforma)}</span>
                     <span className="text-muted-foreground">{u.paket || '-'}</span>
@@ -626,7 +641,7 @@ export default function TrenerDetalji() {
               </div>
             )}
             <p className="text-xs text-muted-foreground">
-              Uređaj se vidi kad aplikacija prijavi telefon za obaveštenja. Model telefona i verzija aplikacije se ne čuvaju.
+              Aktivnost se beleži sa telefona i računara i može da kasni do oko sat vremena. Model telefona i verzija aplikacije se ne čuvaju.
             </p>
           </Section>
 

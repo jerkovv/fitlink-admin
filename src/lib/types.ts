@@ -24,6 +24,10 @@ export type ListTrainer = {
   proba_bez_kartice?: boolean | null
   email_confirmed_at?: string | null
   last_sign_in_at?: string | null
+  /** Kad je stvarno koristio aplikaciju ili sajt; kasni najvise oko sat vremena. */
+  poslednja_aktivnost?: string | null
+  /** Odakle se koristi nalog: ios, android, racunar ili ostalo, i kad poslednji put. */
+  pristupi?: { izvor: string; poslednji: string | null; broj: number }[] | null
   /** Telefoni sa kojih stizu obavestenja: platforma, paket i kad je znak poslednji put osvezen. */
   uredjaji?: { platforma: string; paket: string | null; poslednji: string | null; broj: number }[] | null
   /** Poslednja upotreba sata (trenerov Apple Watch), ako je uparen. */
